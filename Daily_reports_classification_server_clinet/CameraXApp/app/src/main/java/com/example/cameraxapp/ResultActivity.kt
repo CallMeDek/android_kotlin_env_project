@@ -10,17 +10,27 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.android.synthetic.main.activity_result.*
+import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.text.DecimalFormat
 
 
 class ResultActivity : AppCompatActivity() {
+
+    private lateinit var firebaseStorage: FirebaseStorage
+    private lateinit var fileName: String
+    private lateinit var parrotClass: String
+    private lateinit var imageBitmap: Bitmap
+    private lateinit var splittedLabels: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +39,13 @@ class ResultActivity : AppCompatActivity() {
         val filename = intent.getStringExtra("image")
         val result = intent.getStringExtra("result")
         initialize(filename, result)
+
+        firebaseStorage = FirebaseStorage.getInstance()
+
+        saveButton.setOnClickListener {
+            upLoadFromMemory(imageBitmap)
+        }
+
         backButton.setOnClickListener {
             finish()
         }
@@ -36,10 +53,12 @@ class ResultActivity : AppCompatActivity() {
 
     private fun initialize(mfilename: String, mresult: String){
         val filename: String = mfilename
+        this.fileName = filename
         val result: String = mresult
 
         val open: FileInputStream  = this.openFileInput(filename)
         val bmp: Bitmap = BitmapFactory.decodeStream(open)
+        imageBitmap = bmp
         open.close()
 
         imageView.setImageBitmap(bmp)
@@ -75,7 +94,7 @@ class ResultActivity : AppCompatActivity() {
             val labels= application.assets.open("labels.txt").bufferedReader().use{
                 it.readText().trim()
             }
-            val splittedLabels = labels.split("\n")
+            splittedLabels = labels.split("\n")
 
             for (idx in splittedLabels.indices){
                 if (idx == maxIndex){
@@ -86,6 +105,7 @@ class ResultActivity : AppCompatActivity() {
 
                     val className = CustomTextView(this)
                     className.setString(splittedLabels[idx])
+                    parrotClass = splittedLabels[idx]
                     className.text = splittedLabels[idx]
                     className.gravity = Gravity.CENTER
                     className.layoutParams = viewParams
@@ -129,8 +149,25 @@ class ResultActivity : AppCompatActivity() {
                     list_item.addView(linearLayout)
                 }
             }
+            saveButton.visibility = View.VISIBLE
         }
     }
+
+    private fun upLoadFromMemory(bitmap: Bitmap){
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArrayOutputStream)
+        val data=byteArrayOutputStream.toByteArray()
+
+        val index = splittedLabels.indexOf(parrotClass)
+
+        firebaseStorage.reference.child("$index").child(fileName)
+            .putBytes(data).addOnCompleteListener {
+                if(it.isSuccessful){
+                    Toast.makeText(this, "Save success!!", Toast.LENGTH_LONG).show()
+                }
+            }
+    }
+
 }
 
 class CustomTextView : AppCompatTextView {

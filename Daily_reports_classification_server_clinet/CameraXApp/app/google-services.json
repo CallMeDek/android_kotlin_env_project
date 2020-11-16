@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "85219022354",
+    "firebase_url": "https://parrotclassifierserverclient.firebaseio.com",
+    "project_id": "parrotclassifierserverclient",
+    "storage_bucket": "parrotclassifierserverclient.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85219022354:android:e7b085e5680c3d60a46acb",
+        "android_client_info": {
+          "package_name": "com.example.cameraxapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "85219022354-gm7kolqprf84mrmagtsh7hktbg2h6l0g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC56nhVdEXZ_9I_OYVQluoQ3yJ3xDD1NyY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "85219022354-gm7kolqprf84mrmagtsh7hktbg2h6l0g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
