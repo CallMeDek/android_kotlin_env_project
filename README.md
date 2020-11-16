@@ -1,2 +1,6 @@
-# android_kotlin_env_project
-환경부 과제 안드로이드 카메라 앱 관련 프로젝트
+결과:
+
+[자바 네이티브 앱](https://youtu.be/RF5lhBhQjUs)
+[코틀린 네이티브 앱](https://youtu.be/YkWjIa21Kkc)
+[코틀린 서버-클라이언트(RestFul)](https://youtu.be/M_JIXrAVp80)
+
