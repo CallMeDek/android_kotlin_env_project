@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                         val rotatedByteArray = byteStream.toByteArray()
 
                         val b64encoded = Base64.encodeToString(rotatedByteArray, Base64.DEFAULT);
-                        val url = "http://117.16.123.11:5000/parrotClassifier/predict/"
+                        val url = "http://117.16.123.11:5000/parrot-classifier/classify"
                         val stringRequest: StringRequest = object : StringRequest(Method.POST, url,
                             Response.Listener { response ->
                                 try {

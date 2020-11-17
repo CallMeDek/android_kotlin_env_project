@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.AttributeSet
+import android.util.Base64
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -17,20 +18,24 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatTextView
-import com.google.firebase.storage.FirebaseStorage
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import kotlinx.android.synthetic.main.activity_result.*
+import org.json.JSONException
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.text.DecimalFormat
+import java.util.HashMap
 
 
 class ResultActivity : AppCompatActivity() {
 
-    private lateinit var firebaseStorage: FirebaseStorage
     private lateinit var fileName: String
     private lateinit var parrotClass: String
     private lateinit var imageBitmap: Bitmap
     private lateinit var splittedLabels: List<String>
+    private var maxIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +44,6 @@ class ResultActivity : AppCompatActivity() {
         val filename = intent.getStringExtra("image")
         val result = intent.getStringExtra("result")
         initialize(filename, result)
-
-        firebaseStorage = FirebaseStorage.getInstance()
 
         saveButton.setOnClickListener {
             upLoadFromMemory(imageBitmap)
@@ -90,7 +93,7 @@ class ResultActivity : AppCompatActivity() {
             probabilitiesString.forEach {
                 probabilities.add(DecimalFormat("0.0000").format(it.toFloat()).toFloat())
             }
-            val maxIndex = probabilities.indexOf(probabilities.max())
+            maxIndex = probabilities.indexOf(probabilities.max())
             val labels= application.assets.open("labels.txt").bufferedReader().use{
                 it.readText().trim()
             }
@@ -158,14 +161,29 @@ class ResultActivity : AppCompatActivity() {
         bitmap.compress(Bitmap.CompressFormat.JPEG,100,byteArrayOutputStream)
         val data=byteArrayOutputStream.toByteArray()
 
-        val index = splittedLabels.indexOf(parrotClass)
-
-        firebaseStorage.reference.child("$index").child(fileName)
-            .putBytes(data).addOnCompleteListener {
-                if(it.isSuccessful){
-                    Toast.makeText(this, "Save success!!", Toast.LENGTH_LONG).show()
+        val b64encoded = Base64.encodeToString(data, Base64.DEFAULT);
+        val url = "http://117.16.123.11:5000/parrot-classifier/save"
+        val stringRequest: StringRequest = object : StringRequest(
+            Method.POST, url,
+            Response.Listener { response ->
+                try {
+                   Toast.makeText(this@ResultActivity, response, Toast.LENGTH_LONG).show()
+                } catch (e: JSONException) {
+                    e.printStackTrace()
                 }
+            },
+            Response.ErrorListener { error ->
+                Toast.makeText(this@ResultActivity, error.toString(), Toast.LENGTH_LONG).show()
+            }) {
+            override fun getParams(): Map<String, String> {
+                val params = HashMap<String, String>()
+                params.put("b64", b64encoded)
+                params.put("index", "$maxIndex")
+                return params.toMap()
             }
+        }
+        val requestQueue = Volley.newRequestQueue(this@ResultActivity)
+        requestQueue.add(stringRequest)
     }
 
 }
